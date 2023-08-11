@@ -205,6 +205,7 @@ parser Tcp_option_parser(packet_in b,
         //b.extract(vec[Tcp_option_stack.nextIndex].mss);
         //vec[vec.lastIndex].mss.setValid();
         //bit<8> temp = vec[vec.lastIndex].mss.kind;
+        // Hui Lin: I still cannot figure out how to extract option values; but not needed at this moment
         log_msg("HLDebug: TCP option MSS {} {} {}", {vec.size, vec.lastIndex, tcp_hdr_bytes_left});
         transition next_option;
     }
