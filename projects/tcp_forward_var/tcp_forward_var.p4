@@ -55,16 +55,16 @@ header tcp_options_h {
     varbit<320>     options;
 }
 
-// header my_payload {
-//   varbit<32>          payload_val;          
-// }
+header my_payload {
+   bit<8>          payload_val;          
+}
 
 struct headers {
     ethernet_t      ethernet;
     ipv4_t          ipv4;
     tcp_t           tcp;
     tcp_options_h   tcp_opt;
-    //my_payload      my_payload_val;
+    my_payload      my_payload_val;
 }
 
 struct fwd_metadata_t {
@@ -130,21 +130,22 @@ parser MyParser(packet_in packet,
     state parse_tcp_option {
         tcp_payload_size = hdr.ipv4.totalLen - 4 * (bit<16>)hdr.ipv4.ihl - 4 * (bit<16>)hdr.tcp.dataOffset;
         log_msg("HLDebug: TCP option parsing {} {}", {(bit<32>)tcp_hdr_bytes_left, tcp_payload_size});
-        //packet.extract(hdr.tcp_opt, 32 * (bit<32>)tcp_hdr_bytes_left);
-        packet.extract(hdr.tcp_opt, 8);
-        //transition select(tcp_payload_size){
-        //    0 : accept;
-        //    default: parse_payload;
-        //}
+        packet.extract(hdr.tcp_opt, 8 * (bit<32>)tcp_hdr_bytes_left);
+        //packet.extract(hdr.tcp_opt, 96);
         log_msg("HLDebug: TCP option parsing success");
-        transition accept;
+        transition select(tcp_payload_size){
+            0 : accept;
+            default: parse_payload;
+        }
+        //transition accept;
     }
 
-    //state parse_payload {
-    //    log_msg("HLDebug: TCP payload: {} from {} to {} ", {tcp_payload_size, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});
-    //    packet.extract(hdr.my_payload_val, (bit<32>)tcp_payload_size);
-    //    transition accept;
-    //}
+    state parse_payload {
+        packet.extract(hdr.my_payload_val);
+        //packet.extract(hdr.my_payload_val, (bit<32>)tcp_payload_size);
+        log_msg("HLDebug: TCP payload: {} from {} to {} ", {hdr.my_payload_val.payload_val, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});
+        transition accept;
+    }
 }
 
 /*************************************************************************
@@ -225,7 +226,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
         packet.emit(hdr.ipv4);
         packet.emit(hdr.tcp);
         packet.emit(hdr.tcp_opt);
-        //packet.emit(hdr.my_payload_val);
+        packet.emit(hdr.my_payload_val);
     }
 }
 
