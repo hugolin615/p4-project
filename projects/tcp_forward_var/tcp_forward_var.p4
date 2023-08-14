@@ -56,7 +56,8 @@ header tcp_options_h {
 }
 
 header my_payload {
-   bit<8>          payload_val;          
+   //bit<8>          payload_val;
+   varbit<32>	   payload_val;
 }
 
 struct headers {
@@ -141,9 +142,10 @@ parser MyParser(packet_in packet,
     }
 
     state parse_payload {
-        packet.extract(hdr.my_payload_val);
-        //packet.extract(hdr.my_payload_val, (bit<32>)tcp_payload_size);
-        log_msg("HLDebug: TCP payload: {} from {} to {} ", {hdr.my_payload_val.payload_val, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});
+        //packet.extract(hdr.my_payload_val);
+        packet.extract(hdr.my_payload_val, 8 * (bit<32>)tcp_payload_size);
+        //log_msg("HLDebug: TCP payload: {} from {} to {} ", {hdr.my_payload_val.payload_val, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});
+        log_msg("HLDebug: TCP payload: {} from {} to {} ", {tcp_payload_size, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});
         transition accept;
     }
 }
