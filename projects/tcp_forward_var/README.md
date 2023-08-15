@@ -3,6 +3,8 @@ This is to implement a simple TCP state machine (related to only to seq, ack, fl
 This versiion use TCP parser at https://github.com/jafingerhut/p4-guide/blob/master/tcp-options-parser/tcp-options-parser.p4#L141. 
 Note that this github codes directly uses the codes from P4 specification, which seems to use an out-dated tcp parser specification
 
+Using table to apply activities
+
 
 # Implementing Basic Forwarding
 

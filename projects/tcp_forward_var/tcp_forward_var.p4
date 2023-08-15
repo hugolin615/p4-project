@@ -167,21 +167,36 @@ control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
 
+    action drop() {
+        mark_to_drop(standard_metadata);
+    }
+
+    action ipv4_forward(macAddr_t dstAddr, egressSpec_t port) {
+        standard_metadata.egress_spec = port;
+        hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
+        hdr.ethernet.dstAddr = dstAddr;
+        hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
+    }
+
+    table ipv4_lpm {
+        key = {
+            hdr.ipv4.dstAddr: lpm;
+        }
+        actions = {
+            ipv4_forward;
+            drop;
+            NoAction;
+        }
+        size = 1024;
+        default_action = drop();
+    }
+
     apply {
-        // log_msg("HLDebug: entering MyIngress");
-        if (hdr.ipv4.dstAddr == 32w167772417) {  /* 167772417 : 10.0.1.1 */
-            standard_metadata.egress_spec = 1;
-            hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
-            hdr.ethernet.dstAddr = 48w8796093022481;
-            hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
-        } 
-        if (hdr.ipv4.dstAddr == 32w167772674) {  /* for 10.0.2.2 */
-            standard_metadata.egress_spec = 2;
-            hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
-            hdr.ethernet.dstAddr = 48w8796093022754;
-            hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
+        if (hdr.ipv4.isValid()) {
+            ipv4_lpm.apply();
         }
     }
+
 }
 
 /*************************************************************************

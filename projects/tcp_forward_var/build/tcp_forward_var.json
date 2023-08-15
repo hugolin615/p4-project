@@ -1329,7 +1329,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 225,
+        "line" : 240,
         "column" : 8,
         "source_fragment" : "MyDeparser"
       },
@@ -1346,7 +1346,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 203,
+        "line" : 218,
         "column" : 8,
         "source_fragment" : "update_checksum( ..."
       },
@@ -1402,115 +1402,46 @@
   "learn_lists" : [],
   "actions" : [
     {
-      "name" : "tcp_forward_var173",
+      "name" : "NoAction",
       "id" : 0,
+      "runtime_data" : [],
+      "primitives" : []
+    },
+    {
+      "name" : "MyIngress.drop",
+      "id" : 1,
       "runtime_data" : [],
       "primitives" : [
         {
-          "op" : "assign",
+          "op" : "mark_to_drop",
           "parameters" : [
             {
-              "type" : "field",
-              "value" : ["standard_metadata", "egress_spec"]
-            },
-            {
-              "type" : "hexstr",
-              "value" : "0x0001"
+              "type" : "header",
+              "value" : "standard_metadata"
             }
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 173,
-            "column" : 12,
-            "source_fragment" : "standard_metadata.egress_spec = 1"
-          }
-        },
-        {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["ethernet", "srcAddr"]
-            },
-            {
-              "type" : "field",
-              "value" : ["ethernet", "dstAddr"]
-            }
-          ],
-          "source_info" : {
-            "filename" : "tcp_forward_var.p4",
-            "line" : 174,
-            "column" : 12,
-            "source_fragment" : "hdr.ethernet.srcAddr = hdr.ethernet.dstAddr"
-          }
-        },
-        {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["ethernet", "dstAddr"]
-            },
-            {
-              "type" : "hexstr",
-              "value" : "0x080000000111"
-            }
-          ],
-          "source_info" : {
-            "filename" : "tcp_forward_var.p4",
-            "line" : 175,
-            "column" : 12,
-            "source_fragment" : "hdr.ethernet.dstAddr = 48w8796093022481"
-          }
-        },
-        {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["ipv4", "ttl"]
-            },
-            {
-              "type" : "expression",
-              "value" : {
-                "type" : "expression",
-                "value" : {
-                  "op" : "&",
-                  "left" : {
-                    "type" : "expression",
-                    "value" : {
-                      "op" : "+",
-                      "left" : {
-                        "type" : "field",
-                        "value" : ["ipv4", "ttl"]
-                      },
-                      "right" : {
-                        "type" : "hexstr",
-                        "value" : "0xff"
-                      }
-                    }
-                  },
-                  "right" : {
-                    "type" : "hexstr",
-                    "value" : "0xff"
-                  }
-                }
-              }
-            }
-          ],
-          "source_info" : {
-            "filename" : "tcp_forward_var.p4",
-            "line" : 176,
-            "column" : 12,
-            "source_fragment" : "hdr.ipv4.ttl = hdr.ipv4.ttl - 1"
+            "line" : 171,
+            "column" : 8,
+            "source_fragment" : "mark_to_drop(standard_metadata)"
           }
         }
       ]
     },
     {
-      "name" : "tcp_forward_var179",
-      "id" : 1,
-      "runtime_data" : [],
+      "name" : "MyIngress.ipv4_forward",
+      "id" : 2,
+      "runtime_data" : [
+        {
+          "name" : "dstAddr",
+          "bitwidth" : 48
+        },
+        {
+          "name" : "port",
+          "bitwidth" : 9
+        }
+      ],
       "primitives" : [
         {
           "op" : "assign",
@@ -1520,15 +1451,15 @@
               "value" : ["standard_metadata", "egress_spec"]
             },
             {
-              "type" : "hexstr",
-              "value" : "0x0002"
+              "type" : "runtime_data",
+              "value" : 1
             }
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 179,
-            "column" : 12,
-            "source_fragment" : "standard_metadata.egress_spec = 2"
+            "line" : 175,
+            "column" : 8,
+            "source_fragment" : "standard_metadata.egress_spec = port"
           }
         },
         {
@@ -1545,8 +1476,8 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 180,
-            "column" : 12,
+            "line" : 176,
+            "column" : 8,
             "source_fragment" : "hdr.ethernet.srcAddr = hdr.ethernet.dstAddr"
           }
         },
@@ -1558,15 +1489,15 @@
               "value" : ["ethernet", "dstAddr"]
             },
             {
-              "type" : "hexstr",
-              "value" : "0x080000000222"
+              "type" : "runtime_data",
+              "value" : 0
             }
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 181,
-            "column" : 12,
-            "source_fragment" : "hdr.ethernet.dstAddr = 48w8796093022754"
+            "line" : 177,
+            "column" : 8,
+            "source_fragment" : "hdr.ethernet.dstAddr = dstAddr"
           }
         },
         {
@@ -1606,8 +1537,8 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 182,
-            "column" : 12,
+            "line" : 178,
+            "column" : 8,
             "source_fragment" : "hdr.ipv4.ttl = hdr.ipv4.ttl - 1"
           }
         }
@@ -1627,61 +1558,41 @@
       "init_table" : "node_2",
       "tables" : [
         {
-          "name" : "tbl_tcp_forward_var173",
+          "name" : "MyIngress.ipv4_lpm",
           "id" : 0,
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 173,
-            "column" : 42,
-            "source_fragment" : "= 1; ..."
+            "line" : 181,
+            "column" : 10,
+            "source_fragment" : "ipv4_lpm"
           },
-          "key" : [],
-          "match_type" : "exact",
+          "key" : [
+            {
+              "match_type" : "lpm",
+              "name" : "hdr.ipv4.dstAddr",
+              "target" : ["ipv4", "dstAddr"],
+              "mask" : null
+            }
+          ],
+          "match_type" : "lpm",
           "type" : "simple",
           "max_size" : 1024,
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [0],
-          "actions" : ["tcp_forward_var173"],
-          "base_default_next" : "node_4",
-          "next_tables" : {
-            "tcp_forward_var173" : "node_4"
-          },
-          "default_entry" : {
-            "action_id" : 0,
-            "action_const" : true,
-            "action_data" : [],
-            "action_entry_const" : true
-          }
-        },
-        {
-          "name" : "tbl_tcp_forward_var179",
-          "id" : 1,
-          "source_info" : {
-            "filename" : "tcp_forward_var.p4",
-            "line" : 179,
-            "column" : 42,
-            "source_fragment" : "= 2; ..."
-          },
-          "key" : [],
-          "match_type" : "exact",
-          "type" : "simple",
-          "max_size" : 1024,
-          "with_counters" : false,
-          "support_timeout" : false,
-          "direct_meters" : null,
-          "action_ids" : [1],
-          "actions" : ["tcp_forward_var179"],
+          "action_ids" : [2, 1, 0],
+          "actions" : ["MyIngress.ipv4_forward", "MyIngress.drop", "NoAction"],
           "base_default_next" : null,
           "next_tables" : {
-            "tcp_forward_var179" : null
+            "MyIngress.ipv4_forward" : null,
+            "MyIngress.drop" : null,
+            "NoAction" : null
           },
           "default_entry" : {
             "action_id" : 1,
-            "action_const" : true,
+            "action_const" : false,
             "action_data" : [],
-            "action_entry_const" : true
+            "action_entry_const" : false
           }
         }
       ],
@@ -1692,52 +1603,23 @@
           "id" : 0,
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 172,
+            "line" : 195,
             "column" : 12,
-            "source_fragment" : "hdr.ipv4.dstAddr == 32w167772417"
+            "source_fragment" : "hdr.ipv4.isValid()"
           },
           "expression" : {
             "type" : "expression",
             "value" : {
-              "op" : "==",
-              "left" : {
-                "type" : "field",
-                "value" : ["ipv4", "dstAddr"]
-              },
+              "op" : "d2b",
+              "left" : null,
               "right" : {
-                "type" : "hexstr",
-                "value" : "0x0a000101"
-              }
-            }
-          },
-          "true_next" : "tbl_tcp_forward_var173",
-          "false_next" : "node_4"
-        },
-        {
-          "name" : "node_4",
-          "id" : 1,
-          "source_info" : {
-            "filename" : "tcp_forward_var.p4",
-            "line" : 178,
-            "column" : 12,
-            "source_fragment" : "hdr.ipv4.dstAddr == 32w167772674"
-          },
-          "expression" : {
-            "type" : "expression",
-            "value" : {
-              "op" : "==",
-              "left" : {
                 "type" : "field",
-                "value" : ["ipv4", "dstAddr"]
-              },
-              "right" : {
-                "type" : "hexstr",
-                "value" : "0x0a000202"
+                "value" : ["ipv4", "$valid$"]
               }
             }
           },
           "false_next" : null,
-          "true_next" : "tbl_tcp_forward_var179"
+          "true_next" : "MyIngress.ipv4_lpm"
         }
       ]
     },
@@ -1746,7 +1628,7 @@
       "id" : 1,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 191,
+        "line" : 206,
         "column" : 8,
         "source_fragment" : "MyEgress"
       },
@@ -1762,7 +1644,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 203,
+        "line" : 218,
         "column" : 8,
         "source_fragment" : "update_checksum( ..."
       },
