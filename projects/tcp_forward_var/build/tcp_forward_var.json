@@ -26,8 +26,7 @@
         ["flow_id_0", 10, false],
         ["tmp_17", 8, false],
         ["tmp_18", 8, false],
-        ["metadata._fwd_metadata_l2ptr0", 32, false],
-        ["metadata._fwd_metadata_out_bd1", 24, false],
+        ["metadata.tcpLength", 16, false],
         ["_padding_0", 4, false]
       ]
     },
@@ -90,9 +89,15 @@
         ["seqNo", 32, false],
         ["ackNo", 32, false],
         ["dataOffset", 4, false],
-        ["res", 3, false],
-        ["ecn", 3, false],
-        ["ctrl", 6, false],
+        ["res", 4, false],
+        ["cwr", 1, false],
+        ["ecn", 1, false],
+        ["urg", 1, false],
+        ["ack", 1, false],
+        ["psh", 1, false],
+        ["rst", 1, false],
+        ["syn", 1, false],
+        ["fin", 1, false],
         ["window", 16, false],
         ["checksum", 16, false],
         ["urgentPtr", 16, false]
@@ -287,7 +292,7 @@
                   ],
                   "source_info" : {
                     "filename" : "tcp_forward_var.p4",
-                    "line" : 124,
+                    "line" : 133,
                     "column" : 8,
                     "source_fragment" : "        log_msg(\\\"HLDebug parse ipv4 packet\\\");"
                   }
@@ -587,7 +592,7 @@
                   ],
                   "source_info" : {
                     "filename" : "tcp_forward_var.p4",
-                    "line" : 135,
+                    "line" : 144,
                     "column" : 8,
                     "source_fragment" : "        log_msg(\\\"HLDebug: TCP packet from {} to {} dataoffset {} {}\\\", {hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, hdr.tcp.dataOffset, tcp_hdr_bytes_left});"
                   }
@@ -687,6 +692,72 @@
           "name" : "parse_tcp_option",
           "id" : 3,
           "parser_ops" : [
+            {
+              "parameters" : [
+                {
+                  "type" : "field",
+                  "value" : ["scalars", "metadata.tcpLength"]
+                },
+                {
+                  "type" : "expression",
+                  "value" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "-",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["ipv4", "totalLen"]
+                          },
+                          "right" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "&",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "<<",
+                                  "left" : {
+                                    "type" : "expression",
+                                    "value" : {
+                                      "op" : "&",
+                                      "left" : {
+                                        "type" : "field",
+                                        "value" : ["ipv4", "ihl"]
+                                      },
+                                      "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xffff"
+                                      }
+                                    }
+                                  },
+                                  "right" : {
+                                    "type" : "hexstr",
+                                    "value" : "0x2"
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xffff"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffff"
+                      }
+                    }
+                  }
+                }
+              ],
+              "op" : "set"
+            },
             {
               "parameters" : [
                 {
@@ -854,7 +925,7 @@
                   ],
                   "source_info" : {
                     "filename" : "tcp_forward_var.p4",
-                    "line" : 144,
+                    "line" : 154,
                     "column" : 8,
                     "source_fragment" : "        log_msg(\\\"HLDebug: TCP option parsing {} {}\\\", {(bit<32>)tcp_hdr_bytes_left, tcp_payload_size});"
                   }
@@ -941,7 +1012,7 @@
                   ],
                   "source_info" : {
                     "filename" : "tcp_forward_var.p4",
-                    "line" : 147,
+                    "line" : 157,
                     "column" : 8,
                     "source_fragment" : "        log_msg(\\\"HLDebug: TCP option parsing success\\\");"
                   }
@@ -1168,7 +1239,7 @@
                   ],
                   "source_info" : {
                     "filename" : "tcp_forward_var.p4",
-                    "line" : 157,
+                    "line" : 167,
                     "column" : 8,
                     "source_fragment" : "        log_msg(\\\"HLDebug: TCP payload: {} from {} to {} \\\", {hdr.app_val.app1.payload_val, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});"
                   }
@@ -1197,7 +1268,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 279,
+        "line" : 344,
         "column" : 8,
         "source_fragment" : "MyDeparser"
       },
@@ -1213,7 +1284,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 185,
+        "line" : 195,
         "column" : 28,
         "source_fragment" : "syn_val"
       },
@@ -1250,7 +1321,7 @@
       "id" : 1,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 257,
+        "line" : 267,
         "column" : 8,
         "source_fragment" : "update_checksum( ..."
       },
@@ -1301,6 +1372,236 @@
           "value" : ["ipv4", "dstAddr"]
         }
       ]
+    },
+    {
+      "name" : "calc_1",
+      "id" : 2,
+      "source_info" : {
+        "filename" : "tcp_forward_var.p4",
+        "line" : 283,
+        "column" : 8,
+        "source_fragment" : "update_checksum_with_payload(( hdr.tcp.isValid() && hdr.app_val.app2.isValid() ), ..."
+      },
+      "algo" : "csum16",
+      "input" : [
+        {
+          "type" : "field",
+          "value" : ["ipv4", "srcAddr"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "dstAddr"]
+        },
+        {
+          "type" : "hexstr",
+          "value" : "0x00",
+          "bitwidth" : 8
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "protocol"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "metadata.tcpLength"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "srcPort"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "dstPort"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "seqNo"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "ackNo"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "dataOffset"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "res"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "cwr"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "ecn"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "urg"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "ack"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "psh"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "rst"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "syn"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "fin"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "window"]
+        },
+        {
+          "type" : "hexstr",
+          "value" : "0x0000",
+          "bitwidth" : 16
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "urgentPtr"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp_opt", "options"]
+        },
+        {
+          "type" : "field",
+          "value" : ["app_val.app2", "payload_val"]
+        },
+        {
+          "type" : "payload",
+          "value" : null
+        }
+      ]
+    },
+    {
+      "name" : "calc_2",
+      "id" : 3,
+      "source_info" : {
+        "filename" : "tcp_forward_var.p4",
+        "line" : 310,
+        "column" : 8,
+        "source_fragment" : "update_checksum_with_payload(( hdr.tcp.isValid() && hdr.app_val.app1.isValid() ), ..."
+      },
+      "algo" : "csum16",
+      "input" : [
+        {
+          "type" : "field",
+          "value" : ["ipv4", "srcAddr"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "dstAddr"]
+        },
+        {
+          "type" : "hexstr",
+          "value" : "0x00",
+          "bitwidth" : 8
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "protocol"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "metadata.tcpLength"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "srcPort"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "dstPort"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "seqNo"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "ackNo"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "dataOffset"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "res"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "cwr"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "ecn"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "urg"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "ack"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "psh"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "rst"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "syn"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "fin"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "window"]
+        },
+        {
+          "type" : "hexstr",
+          "value" : "0x0000",
+          "bitwidth" : 16
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp", "urgentPtr"]
+        },
+        {
+          "type" : "field",
+          "value" : ["tcp_opt", "options"]
+        },
+        {
+          "type" : "field",
+          "value" : ["app_val.app1", "payload_val"]
+        },
+        {
+          "type" : "payload",
+          "value" : null
+        }
+      ]
     }
   ],
   "learn_lists" : [],
@@ -1326,7 +1627,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 189,
+            "line" : 199,
             "column" : 8,
             "source_fragment" : "mark_to_drop(standard_metadata)"
           }
@@ -1361,7 +1662,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 193,
+            "line" : 203,
             "column" : 8,
             "source_fragment" : "standard_metadata.egress_spec = port"
           }
@@ -1380,7 +1681,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 194,
+            "line" : 204,
             "column" : 8,
             "source_fragment" : "hdr.ethernet.srcAddr = hdr.ethernet.dstAddr"
           }
@@ -1399,7 +1700,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 195,
+            "line" : 205,
             "column" : 8,
             "source_fragment" : "hdr.ethernet.dstAddr = dstAddr"
           }
@@ -1441,7 +1742,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 196,
+            "line" : 206,
             "column" : 8,
             "source_fragment" : "hdr.ipv4.ttl = hdr.ipv4.ttl - 1"
           }
@@ -1449,7 +1750,7 @@
       ]
     },
     {
-      "name" : "tcp_forward_var215",
+      "name" : "tcp_forward_var225",
       "id" : 3,
       "runtime_data" : [],
       "primitives" : [
@@ -1467,7 +1768,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 217,
+            "line" : 227,
             "column" : 23,
             "source_fragment" : "hdr.ipv4.srcAddr"
           }
@@ -1486,7 +1787,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 217,
+            "line" : 227,
             "column" : 41,
             "source_fragment" : "hdr.ipv4.dstAddr"
           }
@@ -1505,7 +1806,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 217,
+            "line" : 227,
             "column" : 59,
             "source_fragment" : "hdr.tcp.srcPort"
           }
@@ -1524,7 +1825,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 217,
+            "line" : 227,
             "column" : 76,
             "source_fragment" : "hdr.tcp.dstPort"
           }
@@ -1551,7 +1852,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 215,
+            "line" : 225,
             "column" : 16,
             "source_fragment" : "hash(flow_id, HashAlgorithm.crc32, ..."
           }
@@ -1583,7 +1884,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 219,
+            "line" : 229,
             "column" : 31,
             "source_fragment" : "(bit<32>)flow_id"
           }
@@ -1606,7 +1907,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 219,
+            "line" : 229,
             "column" : 16,
             "source_fragment" : "syn_val.write( (bit<32>)flow_id, hdr.tcp.seqNo )"
           }
@@ -1614,7 +1915,7 @@
       ]
     },
     {
-      "name" : "tcp_forward_var239",
+      "name" : "tcp_forward_var249",
       "id" : 4,
       "runtime_data" : [],
       "primitives" : [
@@ -1632,7 +1933,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 239,
+            "line" : 249,
             "column" : 51,
             "source_fragment" : "            log_msg(\\\"HLDebug: MyEgress: app1 {}\\\", {hdr.app_val.app1.payload_val});"
           }
@@ -1656,7 +1957,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 239,
+            "line" : 249,
             "column" : 12,
             "source_fragment" : "            log_msg(\\\"HLDebug: MyEgress: app1 {}\\\", {hdr.app_val.app1.payload_val});"
           }
@@ -1671,7 +1972,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 240,
+            "line" : 250,
             "column" : 12,
             "source_fragment" : "hdr.app_val.app2"
           }
@@ -1690,7 +1991,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 240,
+            "line" : 250,
             "column" : 12,
             "source_fragment" : "hdr.app_val.app2 = { hdr.app_val.app1.payload_val"
           }
@@ -1705,7 +2006,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 242,
+            "line" : 252,
             "column" : 12,
             "source_fragment" : "hdr.app_val.app1.setInvalid()"
           }
@@ -1713,7 +2014,7 @@
       ]
     },
     {
-      "name" : "tcp_forward_var246",
+      "name" : "tcp_forward_var256",
       "id" : 5,
       "runtime_data" : [],
       "primitives" : [
@@ -1731,7 +2032,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 246,
+            "line" : 256,
             "column" : 51,
             "source_fragment" : "            log_msg(\\\"HLDebug: MyEgress: app2 {}\\\", {hdr.app_val.app2.payload_val});"
           }
@@ -1755,7 +2056,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 246,
+            "line" : 256,
             "column" : 12,
             "source_fragment" : "            log_msg(\\\"HLDebug: MyEgress: app2 {}\\\", {hdr.app_val.app2.payload_val});"
           }
@@ -1769,18 +2070,18 @@
       "id" : 0,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 182,
+        "line" : 192,
         "column" : 8,
         "source_fragment" : "MyIngress"
       },
       "init_table" : "node_2",
       "tables" : [
         {
-          "name" : "tbl_tcp_forward_var215",
+          "name" : "tbl_tcp_forward_var225",
           "id" : 0,
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 215,
+            "line" : 225,
             "column" : 16,
             "source_fragment" : "hash(flow_id, HashAlgorithm.crc32, ..."
           },
@@ -1792,10 +2093,10 @@
           "support_timeout" : false,
           "direct_meters" : null,
           "action_ids" : [3],
-          "actions" : ["tcp_forward_var215"],
+          "actions" : ["tcp_forward_var225"],
           "base_default_next" : "MyIngress.ipv4_lpm",
           "next_tables" : {
-            "tcp_forward_var215" : "MyIngress.ipv4_lpm"
+            "tcp_forward_var225" : "MyIngress.ipv4_lpm"
           },
           "default_entry" : {
             "action_id" : 3,
@@ -1809,7 +2110,7 @@
           "id" : 1,
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 199,
+            "line" : 209,
             "column" : 10,
             "source_fragment" : "ipv4_lpm"
           },
@@ -1850,7 +2151,7 @@
           "id" : 0,
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 213,
+            "line" : 223,
             "column" : 12,
             "source_fragment" : "hdr.ipv4.isValid()"
           },
@@ -1873,7 +2174,7 @@
           "id" : 1,
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 214,
+            "line" : 224,
             "column" : 16,
             "source_fragment" : "hdr.tcp.isValid()"
           },
@@ -1888,7 +2189,7 @@
               }
             }
           },
-          "true_next" : "tbl_tcp_forward_var215",
+          "true_next" : "tbl_tcp_forward_var225",
           "false_next" : "MyIngress.ipv4_lpm"
         }
       ]
@@ -1898,18 +2199,18 @@
       "id" : 1,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 231,
+        "line" : 241,
         "column" : 8,
         "source_fragment" : "MyEgress"
       },
       "init_table" : "node_8",
       "tables" : [
         {
-          "name" : "tbl_tcp_forward_var239",
+          "name" : "tbl_tcp_forward_var249",
           "id" : 2,
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 239,
+            "line" : 249,
             "column" : 12,
             "source_fragment" : "            log_msg(\\\"HLDebug: MyEgress: app1 {}\\\", {hdr.app_val.app1.payload_val});"
           },
@@ -1921,10 +2222,10 @@
           "support_timeout" : false,
           "direct_meters" : null,
           "action_ids" : [4],
-          "actions" : ["tcp_forward_var239"],
+          "actions" : ["tcp_forward_var249"],
           "base_default_next" : "node_10",
           "next_tables" : {
-            "tcp_forward_var239" : "node_10"
+            "tcp_forward_var249" : "node_10"
           },
           "default_entry" : {
             "action_id" : 4,
@@ -1934,11 +2235,11 @@
           }
         },
         {
-          "name" : "tbl_tcp_forward_var246",
+          "name" : "tbl_tcp_forward_var256",
           "id" : 3,
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 246,
+            "line" : 256,
             "column" : 12,
             "source_fragment" : "            log_msg(\\\"HLDebug: MyEgress: app2 {}\\\", {hdr.app_val.app2.payload_val});"
           },
@@ -1950,10 +2251,10 @@
           "support_timeout" : false,
           "direct_meters" : null,
           "action_ids" : [5],
-          "actions" : ["tcp_forward_var246"],
+          "actions" : ["tcp_forward_var256"],
           "base_default_next" : null,
           "next_tables" : {
-            "tcp_forward_var246" : null
+            "tcp_forward_var256" : null
           },
           "default_entry" : {
             "action_id" : 5,
@@ -1970,7 +2271,7 @@
           "id" : 2,
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 238,
+            "line" : 248,
             "column" : 12,
             "source_fragment" : "hdr.app_val.app1.isValid()"
           },
@@ -1985,7 +2286,7 @@
               }
             }
           },
-          "true_next" : "tbl_tcp_forward_var239",
+          "true_next" : "tbl_tcp_forward_var249",
           "false_next" : "node_10"
         },
         {
@@ -1993,7 +2294,7 @@
           "id" : 3,
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 245,
+            "line" : 255,
             "column" : 12,
             "source_fragment" : "hdr.app_val.app2.isValid()"
           },
@@ -2009,7 +2310,7 @@
             }
           },
           "false_next" : null,
-          "true_next" : "tbl_tcp_forward_var246"
+          "true_next" : "tbl_tcp_forward_var256"
         }
       ]
     }
@@ -2020,7 +2321,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 257,
+        "line" : 267,
         "column" : 8,
         "source_fragment" : "update_checksum( ..."
       },
@@ -2037,6 +2338,92 @@
           "right" : {
             "type" : "field",
             "value" : ["ipv4", "$valid$"]
+          }
+        }
+      }
+    },
+    {
+      "name" : "cksum_0",
+      "id" : 1,
+      "source_info" : {
+        "filename" : "tcp_forward_var.p4",
+        "line" : 283,
+        "column" : 8,
+        "source_fragment" : "update_checksum_with_payload(( hdr.tcp.isValid() && hdr.app_val.app2.isValid() ), ..."
+      },
+      "target" : ["tcp", "checksum"],
+      "type" : "generic",
+      "calculation" : "calc_1",
+      "verify" : false,
+      "update" : true,
+      "if_cond" : {
+        "type" : "expression",
+        "value" : {
+          "op" : "and",
+          "left" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "d2b",
+              "left" : null,
+              "right" : {
+                "type" : "field",
+                "value" : ["tcp", "$valid$"]
+              }
+            }
+          },
+          "right" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "d2b",
+              "left" : null,
+              "right" : {
+                "type" : "field",
+                "value" : ["app_val.app2", "$valid$"]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name" : "cksum_1",
+      "id" : 2,
+      "source_info" : {
+        "filename" : "tcp_forward_var.p4",
+        "line" : 310,
+        "column" : 8,
+        "source_fragment" : "update_checksum_with_payload(( hdr.tcp.isValid() && hdr.app_val.app1.isValid() ), ..."
+      },
+      "target" : ["tcp", "checksum"],
+      "type" : "generic",
+      "calculation" : "calc_2",
+      "verify" : false,
+      "update" : true,
+      "if_cond" : {
+        "type" : "expression",
+        "value" : {
+          "op" : "and",
+          "left" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "d2b",
+              "left" : null,
+              "right" : {
+                "type" : "field",
+                "value" : ["tcp", "$valid$"]
+              }
+            }
+          },
+          "right" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "d2b",
+              "left" : null,
+              "right" : {
+                "type" : "field",
+                "value" : ["app_val.app1", "$valid$"]
+              }
+            }
           }
         }
       }

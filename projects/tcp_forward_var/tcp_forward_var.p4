@@ -42,9 +42,18 @@ header tcp_t {
     bit<32> seqNo;
     bit<32> ackNo;
     bit<4>  dataOffset;
-    bit<3>  res;
-    bit<3>  ecn;
-    bit<6>  ctrl;
+    //bit<3>  res;
+    //bit<3>  ecn;
+    //bit<6>  ctrl;
+    bit<4>  res;
+    bit<1>  cwr;
+    bit<1>  ecn;
+    bit<1>  urg;
+    bit<1>  ack;
+    bit<1>  psh;
+    bit<1>  rst;
+    bit<1>  syn;
+    bit<1>  fin;
     bit<16> window;
     bit<16> checksum;
     bit<16> urgentPtr;
@@ -84,7 +93,7 @@ struct fwd_metadata_t {
 }
 
 struct metadata {
-    fwd_metadata_t fwd_metadata;
+    bit<16> tcpLength;
 }
 
 error {
@@ -141,6 +150,7 @@ parser MyParser(packet_in packet,
     
     state parse_tcp_option {
         tcp_payload_size = hdr.ipv4.totalLen - 4 * (bit<16>)hdr.ipv4.ihl - 4 * (bit<16>)hdr.tcp.dataOffset;
+        meta.tcpLength = hdr.ipv4.totalLen - 4 * (bit<16>)(hdr.ipv4.ihl);
         log_msg("HLDebug: TCP option parsing {} {}", {(bit<32>)tcp_hdr_bytes_left, tcp_payload_size});
         packet.extract(hdr.tcp_opt, 8 * (bit<32>)tcp_hdr_bytes_left);
         //packet.extract(hdr.tcp_opt, 96);
@@ -269,6 +279,61 @@ control MyComputeChecksum(inout headers  hdr, inout metadata meta) {
               hdr.ipv4.dstAddr },
             hdr.ipv4.hdrChecksum,
             HashAlgorithm.csum16);
+        
+        update_checksum_with_payload(( hdr.tcp.isValid() && hdr.app_val.app2.isValid() ),
+        {   hdr.ipv4.srcAddr,
+            hdr.ipv4.dstAddr,
+            8w0,
+            hdr.ipv4.protocol,
+            meta.tcpLength, //I changed this name, so change it back to yours
+            hdr.tcp.srcPort,
+            hdr.tcp.dstPort,
+            hdr.tcp.seqNo,
+            hdr.tcp.ackNo,
+            hdr.tcp.dataOffset,
+            hdr.tcp.res,
+            hdr.tcp.cwr,
+            hdr.tcp.ecn,
+            hdr.tcp.urg,
+            hdr.tcp.ack,
+            hdr.tcp.psh,
+            hdr.tcp.rst,
+            hdr.tcp.syn,
+            hdr.tcp.fin,
+            hdr.tcp.window,
+            16w0,
+            hdr.tcp.urgentPtr,
+            hdr.tcp_opt.options,
+            hdr.app_val.app2.payload_val},
+        hdr.tcp.checksum, HashAlgorithm.csum16);
+
+        update_checksum_with_payload(( hdr.tcp.isValid() && hdr.app_val.app1.isValid() ),
+        {   hdr.ipv4.srcAddr,
+            hdr.ipv4.dstAddr,
+            8w0,
+            hdr.ipv4.protocol,
+            meta.tcpLength, //I changed this name, so change it back to yours
+            hdr.tcp.srcPort,
+            hdr.tcp.dstPort,
+            hdr.tcp.seqNo,
+            hdr.tcp.ackNo,
+            hdr.tcp.dataOffset,
+            hdr.tcp.res,
+            hdr.tcp.cwr,
+            hdr.tcp.ecn,
+            hdr.tcp.urg,
+            hdr.tcp.ack,
+            hdr.tcp.psh,
+            hdr.tcp.rst,
+            hdr.tcp.syn,
+            hdr.tcp.fin,
+            hdr.tcp.window,
+            16w0,
+            hdr.tcp.urgentPtr,
+            hdr.tcp_opt.options,
+            hdr.app_val.app1.payload_val},
+        hdr.tcp.checksum, HashAlgorithm.csum16);
+
     }
 }
 
