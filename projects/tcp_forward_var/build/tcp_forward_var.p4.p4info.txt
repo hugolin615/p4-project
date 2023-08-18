@@ -56,5 +56,20 @@ actions {
     bitwidth: 9
   }
 }
+registers {
+  preamble {
+    id: 370869057
+    name: "MyIngress.syn_val"
+    alias: "syn_val"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 32
+      }
+    }
+  }
+  size: 1024
+}
 type_info {
 }

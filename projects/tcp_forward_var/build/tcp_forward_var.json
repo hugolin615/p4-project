@@ -14,15 +14,19 @@
         ["tmp_6", 16, false],
         ["tmp_7", 32, false],
         ["tmp_8", 16, false],
-        ["tmp_9", 32, false],
-        ["tmp_10", 16, false],
+        ["tmp_9", 8, false],
+        ["tmp_10", 32, false],
         ["tmp_11", 32, false],
-        ["tmp_12", 32, false],
         ["tcp_hdr_bytes_left_0", 7, false],
-        ["tcp_payload_size_0", 16, false],
+        ["tmp_12", 32, false],
+        ["tmp_13", 32, false],
+        ["tmp_14", 16, false],
+        ["tmp_15", 16, false],
+        ["tmp_16", 32, false],
+        ["flow_id_0", 10, false],
         ["metadata._fwd_metadata_l2ptr0", 32, false],
         ["metadata._fwd_metadata_out_bd1", 24, false],
-        ["_padding_0", 6, false]
+        ["_padding_0", 4, false]
       ]
     },
     {
@@ -104,9 +108,8 @@
       "name" : "my_payload",
       "id" : 6,
       "fields" : [
-        ["payload_val", "*"]
-      ],
-      "max_length" : 4
+        ["payload_val", 8, false]
+      ]
     }
   ],
   "headers" : [
@@ -654,122 +657,6 @@
               "parameters" : [
                 {
                   "type" : "field",
-                  "value" : ["scalars", "tcp_payload_size_0"]
-                },
-                {
-                  "type" : "expression",
-                  "value" : {
-                    "type" : "expression",
-                    "value" : {
-                      "op" : "&",
-                      "left" : {
-                        "type" : "expression",
-                        "value" : {
-                          "op" : "-",
-                          "left" : {
-                            "type" : "expression",
-                            "value" : {
-                              "op" : "&",
-                              "left" : {
-                                "type" : "expression",
-                                "value" : {
-                                  "op" : "-",
-                                  "left" : {
-                                    "type" : "field",
-                                    "value" : ["ipv4", "totalLen"]
-                                  },
-                                  "right" : {
-                                    "type" : "expression",
-                                    "value" : {
-                                      "op" : "&",
-                                      "left" : {
-                                        "type" : "expression",
-                                        "value" : {
-                                          "op" : "<<",
-                                          "left" : {
-                                            "type" : "expression",
-                                            "value" : {
-                                              "op" : "&",
-                                              "left" : {
-                                                "type" : "field",
-                                                "value" : ["ipv4", "ihl"]
-                                              },
-                                              "right" : {
-                                                "type" : "hexstr",
-                                                "value" : "0xffff"
-                                              }
-                                            }
-                                          },
-                                          "right" : {
-                                            "type" : "hexstr",
-                                            "value" : "0x2"
-                                          }
-                                        }
-                                      },
-                                      "right" : {
-                                        "type" : "hexstr",
-                                        "value" : "0xffff"
-                                      }
-                                    }
-                                  }
-                                }
-                              },
-                              "right" : {
-                                "type" : "hexstr",
-                                "value" : "0xffff"
-                              }
-                            }
-                          },
-                          "right" : {
-                            "type" : "expression",
-                            "value" : {
-                              "op" : "&",
-                              "left" : {
-                                "type" : "expression",
-                                "value" : {
-                                  "op" : "<<",
-                                  "left" : {
-                                    "type" : "expression",
-                                    "value" : {
-                                      "op" : "&",
-                                      "left" : {
-                                        "type" : "field",
-                                        "value" : ["tcp", "dataOffset"]
-                                      },
-                                      "right" : {
-                                        "type" : "hexstr",
-                                        "value" : "0xffff"
-                                      }
-                                    }
-                                  },
-                                  "right" : {
-                                    "type" : "hexstr",
-                                    "value" : "0x2"
-                                  }
-                                }
-                              },
-                              "right" : {
-                                "type" : "hexstr",
-                                "value" : "0xffff"
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "right" : {
-                        "type" : "hexstr",
-                        "value" : "0xffff"
-                      }
-                    }
-                  }
-                }
-              ],
-              "op" : "set"
-            },
-            {
-              "parameters" : [
-                {
-                  "type" : "field",
                   "value" : ["scalars", "tmp_5"]
                 },
                 {
@@ -1173,83 +1060,30 @@
             {
               "parameters" : [
                 {
-                  "type" : "field",
-                  "value" : ["scalars", "tmp_9"]
-                },
-                {
-                  "type" : "expression",
-                  "value" : {
-                    "type" : "expression",
-                    "value" : {
-                      "op" : "&",
-                      "left" : {
-                        "type" : "expression",
-                        "value" : {
-                          "op" : "<<",
-                          "left" : {
-                            "type" : "expression",
-                            "value" : {
-                              "op" : "&",
-                              "left" : {
-                                "type" : "field",
-                                "value" : ["scalars", "tcp_payload_size_0"]
-                              },
-                              "right" : {
-                                "type" : "hexstr",
-                                "value" : "0xffffffff"
-                              }
-                            }
-                          },
-                          "right" : {
-                            "type" : "hexstr",
-                            "value" : "0x3"
-                          }
-                        }
-                      },
-                      "right" : {
-                        "type" : "hexstr",
-                        "value" : "0xffffffff"
-                      }
-                    }
-                  }
+                  "type" : "regular",
+                  "value" : "my_payload_val"
                 }
               ],
-              "op" : "set"
+              "op" : "extract"
             },
             {
               "parameters" : [
                 {
-                  "type" : "regular",
-                  "value" : "my_payload_val"
+                  "type" : "field",
+                  "value" : ["scalars", "tmp_9"]
                 },
                 {
-                  "type" : "expression",
-                  "value" : {
-                    "type" : "field",
-                    "value" : ["scalars", "tmp_9"]
-                  }
+                  "type" : "field",
+                  "value" : ["my_payload_val", "payload_val"]
                 }
               ],
-              "op" : "extract_VL"
+              "op" : "set"
             },
             {
               "parameters" : [
                 {
                   "type" : "field",
                   "value" : ["scalars", "tmp_10"]
-                },
-                {
-                  "type" : "field",
-                  "value" : ["scalars", "tcp_payload_size_0"]
-                }
-              ],
-              "op" : "set"
-            },
-            {
-              "parameters" : [
-                {
-                  "type" : "field",
-                  "value" : ["scalars", "tmp_11"]
                 },
                 {
                   "type" : "field",
@@ -1262,7 +1096,7 @@
               "parameters" : [
                 {
                   "type" : "field",
-                  "value" : ["scalars", "tmp_12"]
+                  "value" : ["scalars", "tmp_11"]
                 },
                 {
                   "type" : "field",
@@ -1285,24 +1119,24 @@
                       "value" : [
                         {
                           "type" : "field",
+                          "value" : ["scalars", "tmp_9"]
+                        },
+                        {
+                          "type" : "field",
                           "value" : ["scalars", "tmp_10"]
                         },
                         {
                           "type" : "field",
                           "value" : ["scalars", "tmp_11"]
-                        },
-                        {
-                          "type" : "field",
-                          "value" : ["scalars", "tmp_12"]
                         }
                       ]
                     }
                   ],
                   "source_info" : {
                     "filename" : "tcp_forward_var.p4",
-                    "line" : 148,
+                    "line" : 147,
                     "column" : 8,
-                    "source_fragment" : "        log_msg(\\\"HLDebug: TCP payload: {} from {} to {} \\\", {tcp_payload_size, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});"
+                    "source_fragment" : "        log_msg(\\\"HLDebug: TCP payload: {} from {} to {} \\\", {hdr.my_payload_val.payload_val, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});"
                   }
                 }
               ],
@@ -1329,7 +1163,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 240,
+        "line" : 249,
         "column" : 8,
         "source_fragment" : "MyDeparser"
       },
@@ -1339,14 +1173,50 @@
   ],
   "meter_arrays" : [],
   "counter_arrays" : [],
-  "register_arrays" : [],
+  "register_arrays" : [
+    {
+      "name" : "MyIngress.syn_val",
+      "id" : 0,
+      "source_info" : {
+        "filename" : "tcp_forward_var.p4",
+        "line" : 169,
+        "column" : 28,
+        "source_fragment" : "syn_val"
+      },
+      "size" : 1024,
+      "bitwidth" : 32
+    }
+  ],
   "calculations" : [
     {
       "name" : "calc",
       "id" : 0,
+      "algo" : "crc32",
+      "input" : [
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_12"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_13"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_14"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_15"]
+        }
+      ]
+    },
+    {
+      "name" : "calc_0",
+      "id" : 1,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 218,
+        "line" : 227,
         "column" : 8,
         "source_fragment" : "update_checksum( ..."
       },
@@ -1422,7 +1292,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 171,
+            "line" : 173,
             "column" : 8,
             "source_fragment" : "mark_to_drop(standard_metadata)"
           }
@@ -1457,7 +1327,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 175,
+            "line" : 177,
             "column" : 8,
             "source_fragment" : "standard_metadata.egress_spec = port"
           }
@@ -1476,7 +1346,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 176,
+            "line" : 178,
             "column" : 8,
             "source_fragment" : "hdr.ethernet.srcAddr = hdr.ethernet.dstAddr"
           }
@@ -1495,7 +1365,7 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 177,
+            "line" : 179,
             "column" : 8,
             "source_fragment" : "hdr.ethernet.dstAddr = dstAddr"
           }
@@ -1537,9 +1407,174 @@
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 178,
+            "line" : 180,
             "column" : 8,
             "source_fragment" : "hdr.ipv4.ttl = hdr.ipv4.ttl - 1"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "tcp_forward_var199",
+      "id" : 3,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_12"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ipv4", "srcAddr"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "tcp_forward_var.p4",
+            "line" : 201,
+            "column" : 23,
+            "source_fragment" : "hdr.ipv4.srcAddr"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_13"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ipv4", "dstAddr"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "tcp_forward_var.p4",
+            "line" : 201,
+            "column" : 41,
+            "source_fragment" : "hdr.ipv4.dstAddr"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_14"]
+            },
+            {
+              "type" : "field",
+              "value" : ["tcp", "srcPort"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "tcp_forward_var.p4",
+            "line" : 201,
+            "column" : 59,
+            "source_fragment" : "hdr.tcp.srcPort"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_15"]
+            },
+            {
+              "type" : "field",
+              "value" : ["tcp", "dstPort"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "tcp_forward_var.p4",
+            "line" : 201,
+            "column" : 76,
+            "source_fragment" : "hdr.tcp.dstPort"
+          }
+        },
+        {
+          "op" : "modify_field_with_hash_based_offset",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "flow_id_0"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x0000"
+            },
+            {
+              "type" : "calculation",
+              "value" : "calc"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x03ff"
+            }
+          ],
+          "source_info" : {
+            "filename" : "tcp_forward_var.p4",
+            "line" : 199,
+            "column" : 16,
+            "source_fragment" : "hash(flow_id, HashAlgorithm.crc32, ..."
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_16"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["scalars", "flow_id_0"]
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "tcp_forward_var.p4",
+            "line" : 203,
+            "column" : 31,
+            "source_fragment" : "(bit<32>)flow_id"
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "MyIngress.syn_val"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_16"]
+            },
+            {
+              "type" : "field",
+              "value" : ["tcp", "seqNo"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "tcp_forward_var.p4",
+            "line" : 203,
+            "column" : 16,
+            "source_fragment" : "syn_val.write( (bit<32>)flow_id, hdr.tcp.seqNo )"
           }
         }
       ]
@@ -1558,11 +1593,40 @@
       "init_table" : "node_2",
       "tables" : [
         {
-          "name" : "MyIngress.ipv4_lpm",
+          "name" : "tbl_tcp_forward_var199",
           "id" : 0,
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 181,
+            "line" : 199,
+            "column" : 16,
+            "source_fragment" : "hash(flow_id, HashAlgorithm.crc32, ..."
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [3],
+          "actions" : ["tcp_forward_var199"],
+          "base_default_next" : "MyIngress.ipv4_lpm",
+          "next_tables" : {
+            "tcp_forward_var199" : "MyIngress.ipv4_lpm"
+          },
+          "default_entry" : {
+            "action_id" : 3,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "MyIngress.ipv4_lpm",
+          "id" : 1,
+          "source_info" : {
+            "filename" : "tcp_forward_var.p4",
+            "line" : 183,
             "column" : 10,
             "source_fragment" : "ipv4_lpm"
           },
@@ -1603,7 +1667,7 @@
           "id" : 0,
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
-            "line" : 195,
+            "line" : 197,
             "column" : 12,
             "source_fragment" : "hdr.ipv4.isValid()"
           },
@@ -1619,7 +1683,30 @@
             }
           },
           "false_next" : null,
-          "true_next" : "MyIngress.ipv4_lpm"
+          "true_next" : "node_3"
+        },
+        {
+          "name" : "node_3",
+          "id" : 1,
+          "source_info" : {
+            "filename" : "tcp_forward_var.p4",
+            "line" : 198,
+            "column" : 16,
+            "source_fragment" : "hdr.tcp.isValid()"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "d2b",
+              "left" : null,
+              "right" : {
+                "type" : "field",
+                "value" : ["tcp", "$valid$"]
+              }
+            }
+          },
+          "true_next" : "tbl_tcp_forward_var199",
+          "false_next" : "MyIngress.ipv4_lpm"
         }
       ]
     },
@@ -1628,7 +1715,7 @@
       "id" : 1,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 206,
+        "line" : 215,
         "column" : 8,
         "source_fragment" : "MyEgress"
       },
@@ -1644,13 +1731,13 @@
       "id" : 0,
       "source_info" : {
         "filename" : "tcp_forward_var.p4",
-        "line" : 218,
+        "line" : 227,
         "column" : 8,
         "source_fragment" : "update_checksum( ..."
       },
       "target" : ["ipv4", "hdrChecksum"],
       "type" : "generic",
-      "calculation" : "calc",
+      "calculation" : "calc_0",
       "verify" : false,
       "update" : true,
       "if_cond" : {

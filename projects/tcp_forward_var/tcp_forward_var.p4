@@ -56,8 +56,8 @@ header tcp_options_h {
 }
 
 header my_payload {
-   //bit<8>          payload_val;
-   varbit<32>	   payload_val;
+   bit<8>          payload_val;
+   //varbit<32>	   payload_val;
 }
 
 struct headers {
@@ -142,10 +142,10 @@ parser MyParser(packet_in packet,
     }
 
     state parse_payload {
-        //packet.extract(hdr.my_payload_val);
-        packet.extract(hdr.my_payload_val, 8 * (bit<32>)tcp_payload_size);
-        //log_msg("HLDebug: TCP payload: {} from {} to {} ", {hdr.my_payload_val.payload_val, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});
-        log_msg("HLDebug: TCP payload: {} from {} to {} ", {tcp_payload_size, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});
+        packet.extract(hdr.my_payload_val);
+        //packet.extract(hdr.my_payload_val, 8 * (bit<32>)tcp_payload_size);
+        log_msg("HLDebug: TCP payload: {} from {} to {} ", {hdr.my_payload_val.payload_val, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});
+        //log_msg("HLDebug: TCP payload: {} from {} to {} ", {tcp_payload_size, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});
         transition accept;
     }
 }
@@ -166,7 +166,9 @@ control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
 control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
-
+    register<bit<32>>(1024) syn_val;
+    bit<10> flow_id;
+    
     action drop() {
         mark_to_drop(standard_metadata);
     }
@@ -193,6 +195,13 @@ control MyIngress(inout headers hdr,
 
     apply {
         if (hdr.ipv4.isValid()) {
+            if (hdr.tcp.isValid()) {
+                hash(flow_id, HashAlgorithm.crc32,
+                     10w0,
+                     { hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, hdr.tcp.srcPort, hdr.tcp.dstPort },
+                     10w1023);
+                syn_val.write( (bit<32>)flow_id, hdr.tcp.seqNo );
+            }
             ipv4_lpm.apply();
         }
     }
