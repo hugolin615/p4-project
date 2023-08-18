@@ -247,7 +247,7 @@ control MyEgress(inout headers hdr,
         
         if (hdr.app_val.app1.isValid()) {
             log_msg("HLDebug: MyEgress: app1 {}", {hdr.app_val.app1.payload_val});
-            hdr.app_val.app2 = { hdr.app_val.app1.payload_val };
+            hdr.app_val.app2 = { hdr.app_val.app1.payload_val + 8w1 };
             //hdr.app_val.app2 = {8w97 };
             hdr.app_val.app1.setInvalid();
             //hdr.app_val.app2.setValid(); //// Do not call setValid directly here; as this function will re-initialize app2

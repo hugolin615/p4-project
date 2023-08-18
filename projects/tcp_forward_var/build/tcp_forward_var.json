@@ -1985,15 +1985,38 @@
               "value" : ["app_val.app2", "payload_val"]
             },
             {
-              "type" : "field",
-              "value" : ["app_val.app1", "payload_val"]
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["app_val.app1", "payload_val"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x01"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xff"
+                  }
+                }
+              }
             }
           ],
           "source_info" : {
             "filename" : "tcp_forward_var.p4",
             "line" : 250,
             "column" : 12,
-            "source_fragment" : "hdr.app_val.app2 = { hdr.app_val.app1.payload_val"
+            "source_fragment" : "hdr.app_val.app2 = { hdr.app_val.app1.payload_val + 8w1"
           }
         },
         {
