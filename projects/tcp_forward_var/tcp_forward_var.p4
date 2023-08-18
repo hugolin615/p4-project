@@ -56,8 +56,17 @@ header tcp_options_h {
 }
 
 header my_payload {
-   bit<8>          payload_val;
-   //varbit<32>	   payload_val;
+    bit<8>          payload_val;
+    //varbit<32>	   payload_val;
+}
+
+header my_payload2 {
+    bit<8>          payload_val;
+}
+
+header_union app {
+    my_payload   app1;
+    my_payload2  app2;
 }
 
 struct headers {
@@ -65,7 +74,8 @@ struct headers {
     ipv4_t          ipv4;
     tcp_t           tcp;
     tcp_options_h   tcp_opt;
-    my_payload      my_payload_val;
+    //my_payload      my_payload_val;
+    app             app_val;
 }
 
 struct fwd_metadata_t {
@@ -81,7 +91,8 @@ error {
     TcpDataOffsetTooSmall,
     TcpOptionTooLongForHeader,
     TcpBadOptionLength,
-    TcpBadSackOptionLength
+    TcpBadSackOptionLength,
+    TCPPayload
 }
 
 /*************************************************************************
@@ -142,10 +153,15 @@ parser MyParser(packet_in packet,
     }
 
     state parse_payload {
-        packet.extract(hdr.my_payload_val);
+        packet.extract(hdr.app_val.app1);
+        log_msg("HLDebug: TCP payload: {} from {} to {} ", {hdr.app_val.app1.payload_val, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});
+
+        //packet.extract(hdr.my_payload_val);
+        //log_msg("HLDebug: TCP payload: {} from {} to {} ", {hdr.my_payload_val.payload_val, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});
+        
         //packet.extract(hdr.my_payload_val, 8 * (bit<32>)tcp_payload_size);
-        log_msg("HLDebug: TCP payload: {} from {} to {} ", {hdr.my_payload_val.payload_val, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});
         //log_msg("HLDebug: TCP payload: {} from {} to {} ", {tcp_payload_size, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr});
+
         transition accept;
     }
 }
@@ -215,7 +231,21 @@ control MyIngress(inout headers hdr,
 control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
-    apply {  }
+    apply {  
+        // Testing using union to change application layer payload
+        //log_msg("HLDebug: MyEgress: Entering");
+        
+        if (hdr.app_val.app1.isValid()) {
+            log_msg("HLDebug: MyEgress: app1 {}", {hdr.app_val.app1.payload_val});
+            hdr.app_val.app2 = { hdr.app_val.app1.payload_val };
+            //hdr.app_val.app2 = {8w97 };
+            hdr.app_val.app1.setInvalid();
+            //hdr.app_val.app2.setValid(); //// Do not call setValid directly here; as this function will re-initialize app2
+        }
+        if (hdr.app_val.app2.isValid()) {
+            log_msg("HLDebug: MyEgress: app2 {}", {hdr.app_val.app2.payload_val});
+        }
+    }
 }
 
 /*************************************************************************
@@ -252,7 +282,8 @@ control MyDeparser(packet_out packet, in headers hdr) {
         packet.emit(hdr.ipv4);
         packet.emit(hdr.tcp);
         packet.emit(hdr.tcp_opt);
-        packet.emit(hdr.my_payload_val);
+        packet.emit(hdr.app_val);
+        //packet.emit(hdr.my_payload_val);
     }
 }
 
